@@ -1,4 +1,4 @@
-package dev.bltucker.snoozeloo.ui.theme
+package dev.bltucker.snoozeloo.common.theme
 
 import androidx.compose.ui.graphics.Color
 
