@@ -23,17 +23,44 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Snoozeloo"
         tools:targetApi="31">
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove" />
+
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:label="@string/app_name"
             android:theme="@style/Theme.Snoozeloo">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="dev.bltucker.snoozeloo.SHOW_ALARM" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".common.AlarmReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="dev.bltucker.snoozeloo.ALARM_TRIGGER" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".common.BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
