@@ -92,8 +92,13 @@ dependencies {
 
     // Local Storage
     implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     implementation(libs.datastore)
+
+    // WorkManager
+    implementation(libs.work.runtime)
+    androidTestImplementation(libs.work.testing)
 
     // Testing
     testImplementation(libs.junit)
