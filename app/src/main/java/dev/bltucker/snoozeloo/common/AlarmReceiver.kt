@@ -8,16 +8,55 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import dagger.Reusable
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.bltucker.snoozeloo.MainActivity
 import dev.bltucker.snoozeloo.R
+import dev.bltucker.snoozeloo.common.AlarmReceiverIntentFactory.Companion.ALARM_TRIGGER_ACTION
+import dev.bltucker.snoozeloo.common.AlarmReceiverIntentFactory.Companion.EXTRA_ALARM_ID
 import dev.bltucker.snoozeloo.common.repositories.AlarmRepository
+import dev.bltucker.snoozeloo.common.room.AlarmEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+@Reusable
+class AlarmReceiverIntentFactory @Inject constructor(@ApplicationContext private val context: Context){
+
+    fun createAlarmIntent(alarm: AlarmEntity): Intent {
+        return Intent(context, AlarmReceiver::class.java).apply {
+            action = ALARM_TRIGGER_ACTION
+            putExtra(EXTRA_ALARM_ID, alarm.id)
+            putExtra(EXTRA_ALARM_NAME, alarm.name)
+            putExtra(EXTRA_ALARM_VOLUME, alarm.volume)
+            putExtra(EXTRA_ALARM_VIBRATE, alarm.vibrate)
+            putExtra(EXTRA_ALARM_RINGTONE, alarm.ringtone)
+        }
+    }
+
+    fun createAlarmPendingIntent(alarm: AlarmEntity): PendingIntent {
+        return PendingIntent.getBroadcast(
+            context,
+            alarm.id.toInt(),
+            createAlarmIntent(alarm),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    companion object {
+        const val ALARM_TRIGGER_ACTION = "dev.bltucker.snoozeloo.ALARM_TRIGGER"
+        const val EXTRA_ALARM_ID = "alarm_id"
+        const val EXTRA_ALARM_NAME = "alarm_name"
+        const val EXTRA_ALARM_VOLUME = "alarm_volume"
+        const val EXTRA_ALARM_VIBRATE = "alarm_vibrate"
+        const val EXTRA_ALARM_RINGTONE = "alarm_ringtone"
+    }
+
+}
 
 @AndroidEntryPoint
 class AlarmReceiver : BroadcastReceiver() {
@@ -26,11 +65,11 @@ class AlarmReceiver : BroadcastReceiver() {
     lateinit var alarmRepository: AlarmRepository
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != "dev.bltucker.snoozeloo.ALARM_TRIGGER") {
+        if (intent.action != ALARM_TRIGGER_ACTION) {
             return
         }
 
-        val alarmId = intent.getLongExtra("alarm_id", -1L)
+        val alarmId = intent.getLongExtra(EXTRA_ALARM_ID, -1L)
         if (alarmId == -1L) return
 
         val pendingResult = goAsync()
@@ -49,11 +88,11 @@ class AlarmReceiver : BroadcastReceiver() {
                 }
 
                 val fullScreenIntent = Intent(context, MainActivity::class.java).apply {
-                    action = "dev.bltucker.snoozeloo.SHOW_ALARM"
+                    action = ALARM_TRIGGER_ACTION
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                             Intent.FLAG_ACTIVITY_CLEAR_TOP or
                             Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    putExtra("alarm_id", alarmId)
+                    putExtra(EXTRA_ALARM_ID, alarmId)
                 }
 
                 createNotificationChannel(context)

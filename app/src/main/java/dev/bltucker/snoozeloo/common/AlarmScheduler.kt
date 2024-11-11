@@ -2,10 +2,6 @@ package dev.bltucker.snoozeloo.common
 
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.os.Build
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.bltucker.snoozeloo.common.room.AlarmEntity
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,34 +10,17 @@ class ExactAlarmPermissionException : Exception("Cannot schedule exact alarms. S
 
 @Singleton
 class AlarmScheduler @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val alarmManager: AlarmManager
+    private val alarmManager: AlarmManager,
+    private val alarmSdkChecker: AlarmSdkChecker,
+    private val alarmReceiverIntentFactory: AlarmReceiverIntentFactory,
 ) {
     fun scheduleAlarm(alarm: AlarmEntity) {
-        val intent = createAlarmIntent(alarm)
+        val intent = alarmReceiverIntentFactory.createAlarmPendingIntent(alarm)
         scheduleExactAlarm(intent, alarm.nextScheduledTime)
     }
 
-    private fun createAlarmIntent(alarm: AlarmEntity): PendingIntent {
-        val intent = Intent(context, AlarmReceiver::class.java).apply {
-            action = "dev.bltucker.snoozeloo.ALARM_TRIGGER"
-            putExtra("alarm_id", alarm.id)
-            putExtra("alarm_name", alarm.name)
-            putExtra("alarm_volume", alarm.volume)
-            putExtra("alarm_vibrate", alarm.vibrate)
-            putExtra("alarm_ringtone", alarm.ringtone)
-        }
-
-        return PendingIntent.getBroadcast(
-            context,
-            alarm.id.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-    }
-
     private fun scheduleExactAlarm(intent: PendingIntent, triggerTime: Long) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (alarmSdkChecker.isAtLeastS()) {
             if (alarmManager.canScheduleExactAlarms()) {
                 alarmManager.setExactAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
@@ -61,7 +40,7 @@ class AlarmScheduler @Inject constructor(
     }
 
     fun cancelAlarm(alarm: AlarmEntity) {
-        val intent = createAlarmIntent(alarm)
+        val intent = alarmReceiverIntentFactory.createAlarmPendingIntent(alarm)
         alarmManager.cancel(intent)
     }
 }
