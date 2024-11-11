@@ -4,6 +4,7 @@ arch-core = "2.2.0"
 coil = "3.0.2"
 compose-bom = "2024.10.01"
 core-ktx = "1.15.0"
+coroutines = "1.7.3"
 datastore = "1.1.1"
 desugar = "2.0.3"
 espresso = "3.6.1"
@@ -41,6 +42,10 @@ compose-icons-extended = { group = "androidx.compose.material", name = "material
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+
+# Coroutines
+coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+
 
 # DataStore
 datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
