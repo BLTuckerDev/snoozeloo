@@ -4,6 +4,7 @@ arch-core = "2.2.0"
 coil = "3.0.2"
 compose-bom = "2024.10.01"
 core-ktx = "1.15.0"
+core-splashscreen-version = "1.0.1"
 coroutines = "1.7.3"
 datastore = "1.1.1"
 desugar = "2.0.3"
@@ -104,6 +105,10 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+
+# Splash
+core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "core-splashscreen-version" }
+
 
 # Testing
 espresso = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }

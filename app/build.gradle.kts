@@ -96,6 +96,9 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.datastore)
 
+    //Splash
+    implementation(libs.core.splashscreen)
+
     // WorkManager
     implementation(libs.work.runtime)
     androidTestImplementation(libs.work.testing)
