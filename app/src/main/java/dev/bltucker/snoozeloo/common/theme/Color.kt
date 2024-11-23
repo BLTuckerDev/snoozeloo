@@ -11,4 +11,9 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 
-val SplashScreenBlue = Color(0xFF4664FF)
+val SnoozelooBlue = Color(0xFF4664FF)
+val SnoozelooBluePale = Color(0xFFECEFFF)
+val SnoozelooWhite = Color.White
+val SnoozelooBlack = Color.Black
+
+val SnoozeLooGreyBackground = Color(0xFFF6F6F6)
