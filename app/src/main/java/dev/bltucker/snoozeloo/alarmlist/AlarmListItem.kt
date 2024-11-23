@@ -78,11 +78,21 @@ fun AlarmListItem(
                         )
                     }
 
-                    Text(
-                        text = formatTime(alarm.hour, alarm.minute),
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = SnoozelooBlack
-                    )
+                    Row(
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Text(
+                            text = formatTimeWithoutAmPm(alarm.hour, alarm.minute),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = SnoozelooBlack
+                        )
+                        Text(
+                            text = getAmPmIndicator(alarm.hour),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = SnoozelooBlack,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+                        )
+                    }
                 }
 
                 Switch(
@@ -159,6 +169,15 @@ private fun AlarmDayChips(
     }
 }
 
+
+private fun formatTimeWithoutAmPm(hour: Int, minute: Int): String {
+    val time = LocalTime.of(hour, minute)
+    return time.format(DateTimeFormatter.ofPattern("hh:mm"))
+}
+
+private fun getAmPmIndicator(hour: Int): String {
+    return if (hour < 12) "AM" else "PM"
+}
 
 private fun formatTime(hour: Int, minute: Int): String {
     val time = LocalTime.of(hour, minute)
