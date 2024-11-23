@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import dagger.Reusable
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,13 +29,19 @@ import javax.inject.Inject
 class AlarmReceiverIntentFactory @Inject constructor(@ApplicationContext private val context: Context){
 
     fun createAlarmIntent(alarm: AlarmEntity): Intent {
-        return Intent(context, AlarmReceiver::class.java).apply {
+        return Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("snoozeloo://alarm-trigger/${alarm.id}")
+        ).apply {
             action = ALARM_TRIGGER_ACTION
             putExtra(EXTRA_ALARM_ID, alarm.id)
             putExtra(EXTRA_ALARM_NAME, alarm.name)
             putExtra(EXTRA_ALARM_VOLUME, alarm.volume)
             putExtra(EXTRA_ALARM_VIBRATE, alarm.vibrate)
             putExtra(EXTRA_ALARM_RINGTONE, alarm.ringtone)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
     }
 

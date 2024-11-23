@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import dev.bltucker.snoozeloo.alarmlist.ALARM_LIST_ROUTE
 import dev.bltucker.snoozeloo.alarmlist.alarmListScreen
+import dev.bltucker.snoozeloo.alarmtrigger.alarmTriggerScreen
 
 
 @Composable
@@ -15,6 +16,12 @@ fun SnoozelooNavigationGraph(navController: NavHostController){
         alarmListScreen(
             onNavigateToCreateAlarm = {
                 //TODO navigate
+            }
+        )
+
+        alarmTriggerScreen(
+            onDismiss = {
+                navController.popBackStack()
             }
         )
     }
