@@ -20,12 +20,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import dev.bltucker.snoozeloo.R
 import dev.bltucker.snoozeloo.common.AlarmDays
 import dev.bltucker.snoozeloo.common.room.AlarmEntity
@@ -35,6 +40,26 @@ import dev.bltucker.snoozeloo.common.theme.SnoozelooTheme
 import dev.bltucker.snoozeloo.common.theme.SnoozelooWhite
 import java.time.DayOfWeek
 
+
+const val ALARM_LIST_ROUTE = "alarm-list"
+
+fun NavGraphBuilder.alarmListScreen(
+    onNavigateToCreateAlarm: () -> Unit,
+) {
+    composable(ALARM_LIST_ROUTE) {
+        val viewModel = hiltViewModel<AlarmListScreenViewModel>()
+        val model by viewModel.observableModel.collectAsStateWithLifecycle()
+
+        AlarmListScreen(
+            modifier = Modifier.fillMaxSize(),
+            model = model,
+            onCreateAlarm = { onNavigateToCreateAlarm()},
+            onToggleAlarm = viewModel::onToggleAlarm,
+        )
+    }
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmListScreen(modifier: Modifier = Modifier,
@@ -43,6 +68,7 @@ fun AlarmListScreen(modifier: Modifier = Modifier,
                     onToggleAlarm: (Long, Boolean) -> Unit,) {
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = { Text("Your Alarms") }
@@ -65,7 +91,7 @@ fun AlarmListScreen(modifier: Modifier = Modifier,
                 )
             }
         },
-        modifier = modifier
+
     ) { paddingValues ->
         if (model.alarms.isEmpty()) {
             EmptyAlarmList(Modifier.fillMaxSize().padding(paddingValues))
