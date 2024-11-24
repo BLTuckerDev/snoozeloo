@@ -155,6 +155,27 @@ class AlarmRepository @Inject constructor(
         return updatedAlarm
     }
 
+    suspend fun updateAlarmRepeatDays(alarmId: Long, repeatDays: Long) {
+        val alarm = getAlarmById(alarmId) ?: return
+
+        val nextScheduledTime = calculateNextScheduledTime(
+            hour = alarm.hour,
+            minute = alarm.minute,
+            repeatDays = repeatDays
+        )
+
+        val updatedAlarm = alarm.copy(
+            repeatDays = repeatDays,
+            nextScheduledTime = nextScheduledTime
+        )
+
+        alarmDao.update(updatedAlarm)
+
+        if (alarm.isEnabled) {
+            alarmScheduler.scheduleAlarm(updatedAlarm)
+        }
+    }
+
     suspend fun updateAlarm(
         alarmId: Long,
         hour: Int,

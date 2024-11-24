@@ -28,7 +28,7 @@ class AlarmListScreenViewModel @Inject constructor(private val alarmRepository: 
 
         viewModelScope.launch {
             alarmRepository.observeAllAlarms().collect{ alarms ->
-                mutableModel.update { it.copy(alarms = alarms) }
+                mutableModel.update { it.copy(alarms = alarms, isLoading = false) }
             }
         }
     }
@@ -37,6 +37,14 @@ class AlarmListScreenViewModel @Inject constructor(private val alarmRepository: 
     fun onToggleAlarm(alarmId: Long, isEnabled: Boolean){
         viewModelScope.launch {
             alarmRepository.toggleAlarm(alarmId, isEnabled)
+        }
+    }
+
+    fun onDayToggled(alarmId: Long, dayFlag: Long) {
+        viewModelScope.launch {
+            val alarm = mutableModel.value.getAlarmById(alarmId) ?: return@launch
+            val newRepeatDays = alarm.repeatDays xor dayFlag
+            alarmRepository.updateAlarmRepeatDays(alarmId, newRepeatDays)
         }
     }
 }

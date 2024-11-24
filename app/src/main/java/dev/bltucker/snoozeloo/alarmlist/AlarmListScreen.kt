@@ -34,6 +34,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import dev.bltucker.snoozeloo.R
 import dev.bltucker.snoozeloo.common.AlarmDays
+import dev.bltucker.snoozeloo.common.composables.LoadingSpinner
 import dev.bltucker.snoozeloo.common.room.AlarmEntity
 import dev.bltucker.snoozeloo.common.theme.SnoozeLooGreyBackground
 import dev.bltucker.snoozeloo.common.theme.SnoozelooBlue
@@ -64,6 +65,7 @@ fun NavGraphBuilder.alarmListScreen(
             onCreateAlarm = { onNavigateToCreateAlarm()},
             onNavigateToEditAlarm = onNavigateToEditAlarm,
             onToggleAlarm = viewModel::onToggleAlarm,
+            onDayToggled = viewModel::onDayToggled
         )
     }
 }
@@ -76,7 +78,8 @@ fun AlarmListScreen(
     model: AlarmListScreenModel,
     onCreateAlarm: () -> Unit,
     onToggleAlarm: (Long, Boolean) -> Unit,
-    onNavigateToEditAlarm: (alarmId: Long) -> Unit,) {
+    onNavigateToEditAlarm: (alarmId: Long) -> Unit,
+    onDayToggled: (Long, Long) -> Unit,) {
 
     Scaffold(
         modifier = modifier,
@@ -104,7 +107,9 @@ fun AlarmListScreen(
         },
 
     ) { paddingValues ->
-        if (model.alarms.isEmpty()) {
+        if(model.isLoading){
+            LoadingSpinner(modifier = Modifier.fillMaxSize().padding(paddingValues))
+        }else if (model.alarms.isEmpty()) {
             EmptyAlarmList(Modifier
                 .fillMaxSize()
                 .padding(paddingValues))
@@ -115,7 +120,8 @@ fun AlarmListScreen(
                    .padding(paddingValues),
                onNavigateToEditAlarm = onNavigateToEditAlarm,
                onToggleAlarm = onToggleAlarm,
-               alarms = model.alarms)
+               alarms = model.alarms,
+               onDayToggled = onDayToggled)
         }
     }
 }
@@ -148,14 +154,16 @@ private fun AlarmList(
     modifier: Modifier = Modifier,
     onToggleAlarm: (Long, Boolean) -> Unit,
     alarms: List<AlarmEntity>,
-    onNavigateToEditAlarm: (alarmId: Long) -> Unit,){
+    onNavigateToEditAlarm: (alarmId: Long) -> Unit,
+    onDayToggled: (Long, Long) -> Unit){
     LazyColumn(
         modifier = modifier.background(SnoozeLooGreyBackground),
     ) {
         items(alarms, key = { it.id }){ alarm ->
             AlarmListItem(alarm = alarm,
                 onNavigateToEditAlarm = onNavigateToEditAlarm,
-                onToggleAlarm = onToggleAlarm)
+                onToggleAlarm = onToggleAlarm,
+                onDayToggled = onDayToggled)
         }
     }
 }
@@ -226,7 +234,8 @@ private fun AlarmListScreenPreview() {
             model = previewModel,
             onCreateAlarm = {},
             onToggleAlarm = { _, _ -> },
-            onNavigateToEditAlarm = { }
+            onNavigateToEditAlarm = { },
+            onDayToggled = { _, _ -> }
         )
     }
 }
@@ -244,7 +253,27 @@ private fun EmptyAlarmListScreenPreview() {
             model = emptyModel,
             onCreateAlarm = {},
             onToggleAlarm = { _, _ -> },
-            onNavigateToEditAlarm = {}
+            onNavigateToEditAlarm = {},
+            onDayToggled = { _, _ -> }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LoadingAlarmListScreenPreview() {
+    val emptyModel = AlarmListScreenModel(
+        alarms = emptyList(),
+        isLoading = true
+    )
+
+    SnoozelooTheme {
+        AlarmListScreen(
+            model = emptyModel,
+            onCreateAlarm = {},
+            onToggleAlarm = { _, _ -> },
+            onNavigateToEditAlarm = {},
+            onDayToggled = { _, _ -> }
         )
     }
 }

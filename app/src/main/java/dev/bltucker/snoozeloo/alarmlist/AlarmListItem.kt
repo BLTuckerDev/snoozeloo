@@ -50,6 +50,7 @@ fun AlarmListItem(
     alarm: AlarmEntity,
     onToggleAlarm: (Long, Boolean) -> Unit,
     onNavigateToEditAlarm: (alarmId: Long) -> Unit,
+    onDayToggled: (Long, Long) -> Unit,
 ) {
     Card(
         modifier = modifier
@@ -120,7 +121,13 @@ fun AlarmListItem(
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-            AlarmDayChips(repeatDays = alarm.repeatDays)
+            AlarmDayChips(
+                modifier = Modifier,
+                repeatDays = alarm.repeatDays,
+                alarmId = alarm.id,
+                onDayToggled = onDayToggled,
+                enabled = alarm.isEnabled,
+                )
 
             if (shouldShowSleepSuggestion(alarm.hour, alarm.minute)) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -138,6 +145,9 @@ fun AlarmListItem(
 @Composable
 private fun AlarmDayChips(
     repeatDays: Long,
+    alarmId: Long,
+    onDayToggled: (Long, Long) -> Unit,
+    enabled: Boolean,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -145,6 +155,7 @@ private fun AlarmDayChips(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         DayOfWeek.entries.forEach { day ->
+            val dayFlag = 1L shl day.ordinal
             val isSelected = AlarmDays.isEnabled(repeatDays, day)
             val dayText = day.name.take(2).let { it[0] + it[1].lowercase() }
 
@@ -153,8 +164,17 @@ private fun AlarmDayChips(
                     .width(38.dp)
                     .height(26.dp)
                     .clip(RoundedCornerShape(38.dp))
-                    .background(if (isSelected) SnoozelooBlue else SnoozelooBluePale)
-                    .clickable { /* TODO ability to toggle off a day */ },
+                    .background(
+                        when {
+                            isSelected -> SnoozelooBlue
+                            enabled -> SnoozelooBluePale
+                            else -> SnoozelooBluePale.copy(alpha = 0.5f)
+                        }
+                    )
+                    .clickable(
+                        enabled = enabled,
+                        onClick = { onDayToggled(alarmId, dayFlag) }
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -163,14 +183,17 @@ private fun AlarmDayChips(
                     fontSize = 12.sp,
                     lineHeight = 16.sp,
                     fontWeight = FontWeight(500),
-                    color = if(isSelected) SnoozelooWhite else SnoozelooBlack,
-                    fontFamily = FontFamily.Default // TODO: Replace with Montserrat
+                    color = when {
+                        isSelected -> SnoozelooWhite
+                        enabled -> SnoozelooBlack
+                        else -> SnoozelooBlack.copy(alpha = 0.5f)
+                    },
+                    fontFamily = FontFamily.Default
                 )
             }
         }
     }
 }
-
 
 private fun formatTimeWithoutAmPm(hour: Int, minute: Int): String {
     val time = LocalTime.of(hour, minute)
@@ -347,7 +370,8 @@ private fun AlarmListItemPreviewCollection() {
                 AlarmListItem(
                     alarm = alarm,
                     onToggleAlarm = { _, _ -> },
-                    onNavigateToEditAlarm = { }
+                    onNavigateToEditAlarm = { },
+                    onDayToggled = { _, _ -> }
                 )
             }
         }
