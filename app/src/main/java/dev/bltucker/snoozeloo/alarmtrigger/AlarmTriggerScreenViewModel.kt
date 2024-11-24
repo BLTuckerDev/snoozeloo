@@ -1,9 +1,18 @@
 package dev.bltucker.snoozeloo.alarmtrigger
 
+import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.net.Uri
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.bltucker.snoozeloo.common.repositories.AlarmRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,11 +23,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AlarmTriggerViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val alarmRepository: AlarmRepository,
+    private val vibrator: Vibrator,
+    private val audioManager: AudioManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val alarmId: Long = checkNotNull(savedStateHandle[ALARM_ID_ARG])
+
+    private var mediaPlayer: MediaPlayer? = null
 
     private val mutableModel = MutableStateFlow(
         AlarmTriggerScreenModel(
@@ -38,7 +52,6 @@ class AlarmTriggerViewModel @Inject constructor(
 
         hasStarted = true
 
-        //TODO need to play ringtone and vibrate it required by the alarm.
         viewModelScope.launch {
             val alarm = alarmRepository.getAlarmById(alarmId)
             alarm?.let {
@@ -50,8 +63,61 @@ class AlarmTriggerViewModel @Inject constructor(
                     alarmName = it.name,
                     formattedTime = time.format(formatter)
                 )
+
+                if (it.ringtone != "silent") {
+                    val ringtoneUri = when (it.ringtone) {
+                        "default" -> RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                        else -> Uri.parse(it.ringtone)
+                    }
+                    playRingtone(ringtoneUri, it.volume)
+                }
+
+                if (it.vibrate) {
+                    startVibration()
+                }
             }
         }
+    }
+
+    private fun playRingtone(ringtoneUri: Uri, volume: Int) {
+        try {
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(context, ringtoneUri)
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                isLooping = true
+
+
+                val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+                val scaledVolume = (volume / 100f) * maxVolume
+                audioManager.setStreamVolume(AudioManager.STREAM_ALARM, scaledVolume.toInt(), 0)
+
+                prepare()
+                start()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun startVibration() {
+        vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 500, 1000), 0))
+    }
+
+    private fun stopAlarm() {
+        mediaPlayer?.apply {
+            if (isPlaying) {
+                stop()
+            }
+            release()
+        }
+        mediaPlayer = null
+
+        vibrator.cancel()
     }
 
     fun onTurnOff() {
@@ -60,12 +126,20 @@ class AlarmTriggerViewModel @Inject constructor(
             if (alarm != null && !alarm.isRepeating()) {
                 alarmRepository.toggleAlarm(alarmId, false)
             }
+
+            stopAlarm()
         }
     }
 
     fun onSnooze() {
         viewModelScope.launch {
             alarmRepository.snoozeAlarm(alarmId)
+            stopAlarm()
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopAlarm()
     }
 }
