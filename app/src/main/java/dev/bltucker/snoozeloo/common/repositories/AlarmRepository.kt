@@ -155,8 +155,56 @@ class AlarmRepository @Inject constructor(
         return updatedAlarm
     }
 
+    suspend fun updateAlarm(
+        alarmId: Long,
+        hour: Int,
+        minute: Int,
+        name: String? = null,
+        repeatDays: Set<DayOfWeek> = emptySet(),
+        ringtone: String = "default",
+        volume: Int = 50,
+        vibrate: Boolean = false
+    ) {
+        require(hour in 0..23) { "Hour must be between 0 and 23" }
+        require(minute in 0..59) { "Minute must be between 0 and 59" }
+        require(volume in 0..100) { "Volume must be between 0 and 100" }
+
+        val existingAlarm = alarmDao.getAlarmById(alarmId) ?: return
+
+        val repeatDaysBitmask = if (repeatDays.isEmpty()) {
+            0L
+        } else {
+            AlarmDays.fromDaysList(repeatDays.toList())
+        }
+
+        val nextScheduledTime = calculateNextScheduledTime(
+            hour = hour,
+            minute = minute,
+            repeatDays = repeatDaysBitmask
+        )
+
+        val updatedAlarm = existingAlarm.copy(
+            hour = hour,
+            minute = minute,
+            name = name,
+            repeatDays = repeatDaysBitmask,
+            ringtone = ringtone,
+            volume = volume,
+            vibrate = vibrate,
+            nextScheduledTime = nextScheduledTime,
+            snoozedUntil = null
+        )
+
+        alarmDao.update(updatedAlarm)
+
+        alarmScheduler.cancelAlarm(existingAlarm)
+        if (existingAlarm.isEnabled) {
+            alarmScheduler.scheduleAlarm(updatedAlarm)
+        }
+    }
+
     suspend fun updateAlarmRingtone(alarmId: Long, ringtone: String) {
-        val alarm = alarmDao.getAlarmById(alarmId) ?: throw IllegalStateException("Alarm not found")
+        val alarm = alarmDao.getAlarmById(alarmId) ?: return
         val updatedAlarm = alarm.copy(ringtone = ringtone)
         alarmDao.update(updatedAlarm)
     }
