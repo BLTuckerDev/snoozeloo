@@ -155,6 +155,12 @@ class AlarmRepository @Inject constructor(
         return updatedAlarm
     }
 
+    suspend fun updateAlarmRingtone(alarmId: Long, ringtone: String) {
+        val alarm = alarmDao.getAlarmById(alarmId) ?: throw IllegalStateException("Alarm not found")
+        val updatedAlarm = alarm.copy(ringtone = ringtone)
+        alarmDao.update(updatedAlarm)
+    }
+
     private fun calculateNextScheduledTime(
         hour: Int,
         minute: Int,
