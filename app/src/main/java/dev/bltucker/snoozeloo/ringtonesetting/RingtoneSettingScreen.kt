@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
@@ -35,6 +36,16 @@ import dev.bltucker.snoozeloo.common.theme.SnoozelooWhite
 
 const val RINGTONE_SETTING_ROUTE = "ringtone-setting"
 const val RINGTONE_SOURCE_ALARM_ID = "sourceAlarmId"
+
+fun NavController.navigateToRingtoneSettings(alarmId: Long? = null) {
+    val route = buildString {
+        append(RINGTONE_SETTING_ROUTE)
+        if (alarmId != null) {
+            append("/$alarmId")
+        }
+    }
+    navigate(route)
+}
 
 fun NavGraphBuilder.ringtoneSettingScreen(
     onNavigateBack: () -> Unit

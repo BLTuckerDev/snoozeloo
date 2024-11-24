@@ -42,7 +42,6 @@ import dev.bltucker.snoozeloo.common.theme.SnoozelooWhite
 const val ALARM_TRIGGER_ROUTE = "alarm-trigger"
 const val ALARM_ID_ARG = "alarmId"
 
-
 fun NavGraphBuilder.alarmTriggerScreen(
     onDismiss: () -> Unit,
 ) {

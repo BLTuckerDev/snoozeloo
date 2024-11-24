@@ -45,6 +45,7 @@ const val ALARM_LIST_ROUTE = "alarm-list"
 
 fun NavGraphBuilder.alarmListScreen(
     onNavigateToCreateAlarm: () -> Unit,
+    onNavigateToEditAlarm: (alarmId: Long) -> Unit,
 ) {
     composable(ALARM_LIST_ROUTE) {
         val viewModel = hiltViewModel<AlarmListScreenViewModel>()
@@ -54,6 +55,7 @@ fun NavGraphBuilder.alarmListScreen(
             modifier = Modifier.fillMaxSize(),
             model = model,
             onCreateAlarm = { onNavigateToCreateAlarm()},
+            onNavigateToEditAlarm = onNavigateToEditAlarm,
             onToggleAlarm = viewModel::onToggleAlarm,
         )
     }
@@ -62,10 +64,12 @@ fun NavGraphBuilder.alarmListScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlarmListScreen(modifier: Modifier = Modifier,
-                    model: AlarmListScreenModel,
-                    onCreateAlarm: () -> Unit,
-                    onToggleAlarm: (Long, Boolean) -> Unit,) {
+fun AlarmListScreen(
+    modifier: Modifier = Modifier,
+    model: AlarmListScreenModel,
+    onCreateAlarm: () -> Unit,
+    onToggleAlarm: (Long, Boolean) -> Unit,
+    onNavigateToEditAlarm: (alarmId: Long) -> Unit,) {
 
     Scaffold(
         modifier = modifier,
@@ -94,10 +98,15 @@ fun AlarmListScreen(modifier: Modifier = Modifier,
 
     ) { paddingValues ->
         if (model.alarms.isEmpty()) {
-            EmptyAlarmList(Modifier.fillMaxSize().padding(paddingValues))
+            EmptyAlarmList(Modifier
+                .fillMaxSize()
+                .padding(paddingValues))
         } else {
            AlarmList(
-               modifier = Modifier.fillMaxSize().padding(paddingValues),
+               modifier = Modifier
+                   .fillMaxSize()
+                   .padding(paddingValues),
+               onNavigateToEditAlarm = onNavigateToEditAlarm,
                onToggleAlarm = onToggleAlarm,
                alarms = model.alarms)
         }
@@ -128,14 +137,18 @@ private fun EmptyAlarmList(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun AlarmList(modifier: Modifier = Modifier,
-                      onToggleAlarm: (Long, Boolean) -> Unit,
-                      alarms: List<AlarmEntity>,){
+private fun AlarmList(
+    modifier: Modifier = Modifier,
+    onToggleAlarm: (Long, Boolean) -> Unit,
+    alarms: List<AlarmEntity>,
+    onNavigateToEditAlarm: (alarmId: Long) -> Unit,){
     LazyColumn(
         modifier = modifier.background(SnoozeLooGreyBackground),
     ) {
         items(alarms, key = { it.id }){ alarm ->
-            AlarmListItem(alarm = alarm, onToggleAlarm = onToggleAlarm)
+            AlarmListItem(alarm = alarm,
+                onNavigateToEditAlarm = onNavigateToEditAlarm,
+                onToggleAlarm = onToggleAlarm)
         }
     }
 }
@@ -205,7 +218,8 @@ private fun AlarmListScreenPreview() {
         AlarmListScreen(
             model = previewModel,
             onCreateAlarm = {},
-            onToggleAlarm = { _, _ -> }
+            onToggleAlarm = { _, _ -> },
+            onNavigateToEditAlarm = { }
         )
     }
 }
@@ -222,7 +236,8 @@ private fun EmptyAlarmListScreenPreview() {
         AlarmListScreen(
             model = emptyModel,
             onCreateAlarm = {},
-            onToggleAlarm = { _, _ -> }
+            onToggleAlarm = { _, _ -> },
+            onNavigateToEditAlarm = {}
         )
     }
 }

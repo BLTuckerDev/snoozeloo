@@ -46,14 +46,16 @@ import java.time.format.DateTimeFormatter
 //TODO functionality for changing day by tapping chip
 @Composable
 fun AlarmListItem(
+    modifier: Modifier = Modifier,
     alarm: AlarmEntity,
     onToggleAlarm: (Long, Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    onNavigateToEditAlarm: (alarmId: Long) -> Unit,
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { onNavigateToEditAlarm(alarm.id) },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = SnoozelooWhite,
@@ -344,7 +346,8 @@ private fun AlarmListItemPreviewCollection() {
             previewAlarms.forEach { alarm ->
                 AlarmListItem(
                     alarm = alarm,
-                    onToggleAlarm = { _, _ -> }
+                    onToggleAlarm = { _, _ -> },
+                    onNavigateToEditAlarm = { }
                 )
             }
         }
