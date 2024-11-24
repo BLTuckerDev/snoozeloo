@@ -35,7 +35,7 @@ class AlarmSchedulerTest {
         alarmSdkChecker = mockk()
         alarmReceiverIntentFactory = mockk()
 
-        every { alarmReceiverIntentFactory.createAlarmPendingIntent(any()) } returns testPendingIntent
+        every { alarmReceiverIntentFactory.createAlarmReceiverPendingIntent(any()) } returns testPendingIntent
 
         alarmScheduler = AlarmScheduler(
             alarmManager = alarmManager,
@@ -51,7 +51,7 @@ class AlarmSchedulerTest {
         alarmScheduler.scheduleAlarm(testAlarm)
 
         verify {
-            alarmReceiverIntentFactory.createAlarmPendingIntent(testAlarm)
+            alarmReceiverIntentFactory.createAlarmReceiverPendingIntent(testAlarm)
             alarmSdkChecker.isAtLeastS()
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
@@ -69,7 +69,7 @@ class AlarmSchedulerTest {
         alarmScheduler.scheduleAlarm(testAlarm)
 
         verify {
-            alarmReceiverIntentFactory.createAlarmPendingIntent(testAlarm)
+            alarmReceiverIntentFactory.createAlarmReceiverPendingIntent(testAlarm)
             alarmSdkChecker.isAtLeastS()
             alarmManager.canScheduleExactAlarms()
             alarmManager.setExactAndAllowWhileIdle(
@@ -93,7 +93,7 @@ class AlarmSchedulerTest {
         alarmScheduler.cancelAlarm(testAlarm)
 
         verify {
-            alarmReceiverIntentFactory.createAlarmPendingIntent(testAlarm)
+            alarmReceiverIntentFactory.createAlarmReceiverPendingIntent(testAlarm)
             alarmManager.cancel(testPendingIntent)
         }
     }

@@ -20,9 +20,9 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             navController = rememberNavController()
-
             SnoozelooTheme {
                 SnoozelooNavigationGraph(navController)
             }
@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+        setIntent(intent)
         navController.handleDeepLink(intent)
     }
 }

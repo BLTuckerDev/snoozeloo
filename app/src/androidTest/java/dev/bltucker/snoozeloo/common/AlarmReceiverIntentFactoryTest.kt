@@ -1,6 +1,5 @@
 package dev.bltucker.snoozeloo.common
 
-import android.app.PendingIntent
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -43,14 +42,14 @@ class AlarmReceiverIntentFactoryTest {
     }
 
     @Test
-    fun createAlarmIntent_setsCorrectAction() {
-        val intent = factory.createAlarmIntent(testAlarm)
+    fun createAlarmReceiverIntent_setsCorrectAction() {
+        val intent = factory.createAlarmReceiverIntent(testAlarm)
         assertEquals(ALARM_TRIGGER_ACTION, intent.action)
     }
 
     @Test
-    fun createAlarmIntent_setsCorrectExtras() {
-        val intent = factory.createAlarmIntent(testAlarm)
+    fun createAlarmReceiverIntent_setsCorrectExtras() {
+        val intent = factory.createAlarmReceiverIntent(testAlarm)
 
         assertEquals(testAlarm.id, intent.getLongExtra(EXTRA_ALARM_ID, -1))
         assertEquals(testAlarm.name, intent.getStringExtra(EXTRA_ALARM_NAME))
@@ -60,19 +59,19 @@ class AlarmReceiverIntentFactoryTest {
     }
 
     @Test
-    fun createAlarmPendingIntent_returnsValidPendingIntent() {
-        val pendingIntent = factory.createAlarmPendingIntent(testAlarm)
+    fun createAlarmPendingIntent_returnsValidReceiverPendingIntent() {
+        val pendingIntent = factory.createAlarmReceiverPendingIntent(testAlarm)
 
         assertNotNull(pendingIntent)
         assertTrue(pendingIntent.isImmutable)
     }
 
     @Test
-    fun createAlarmPendingIntent_uniqueForDifferentAlarms() {
-        val pendingIntent1 = factory.createAlarmPendingIntent(testAlarm)
+    fun createAlarmReceiverPendingIntent_uniqueForDifferentAlarms() {
+        val pendingIntent1 = factory.createAlarmReceiverPendingIntent(testAlarm)
 
         val differentAlarm = testAlarm.copy(id = 456L)
-        val pendingIntent2 = factory.createAlarmPendingIntent(differentAlarm)
+        val pendingIntent2 = factory.createAlarmReceiverPendingIntent(differentAlarm)
 
         assert(!pendingIntent1.equals(pendingIntent2))
     }

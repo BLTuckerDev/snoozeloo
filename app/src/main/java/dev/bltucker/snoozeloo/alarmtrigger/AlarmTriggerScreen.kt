@@ -1,5 +1,6 @@
 package dev.bltucker.snoozeloo.alarmtrigger
 
+import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import dev.bltucker.snoozeloo.R
-import dev.bltucker.snoozeloo.common.AlarmReceiverIntentFactory
 import dev.bltucker.snoozeloo.common.theme.SnoozelooBlue
 import dev.bltucker.snoozeloo.common.theme.SnoozelooBluePale
 import dev.bltucker.snoozeloo.common.theme.SnoozelooTheme
@@ -55,7 +55,7 @@ fun NavGraphBuilder.alarmTriggerScreen(
         deepLinks = listOf(
             navDeepLink {
                 uriPattern = "snoozeloo://alarm-trigger/{$ALARM_ID_ARG}"
-                action = AlarmReceiverIntentFactory.ALARM_TRIGGER_ACTION
+                action = Intent.ACTION_VIEW
             }
         )
     ) {

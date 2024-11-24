@@ -3,6 +3,7 @@ package dev.bltucker.snoozeloo.common
 import android.app.AlarmManager
 import android.content.Context
 import android.media.RingtoneManager
+import android.os.PowerManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,5 +24,10 @@ object SystemServicesModule {
         val ringtoneManager = RingtoneManager(context)
         ringtoneManager.setType(RingtoneManager.TYPE_ALARM)
         return ringtoneManager
+    }
+
+    @Provides
+    fun providePowerService(@ApplicationContext context: Context): PowerManager{
+        return context.getSystemService(Context.POWER_SERVICE) as PowerManager
     }
 }
