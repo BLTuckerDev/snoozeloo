@@ -1,13 +1,17 @@
 package dev.bltucker.snoozeloo.alarmlist
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.bltucker.snoozeloo.common.repositories.AlarmRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AlarmListScreenViewModel @Inject constructor(): ViewModel(){
+class AlarmListScreenViewModel @Inject constructor(private val alarmRepository: AlarmRepository): ViewModel(){
 
     private val mutableModel: MutableStateFlow<AlarmListScreenModel> = MutableStateFlow(AlarmListScreenModel())
 
@@ -22,11 +26,17 @@ class AlarmListScreenViewModel @Inject constructor(): ViewModel(){
 
         hasStarted = true
 
-        //load data
+        viewModelScope.launch {
+            alarmRepository.observeAllAlarms().collect{ alarms ->
+                mutableModel.update { it.copy(alarms = alarms) }
+            }
+        }
     }
 
 
     fun onToggleAlarm(alarmId: Long, isEnabled: Boolean){
-        //update alarm
+        viewModelScope.launch {
+            alarmRepository.toggleAlarm(alarmId, isEnabled)
+        }
     }
 }

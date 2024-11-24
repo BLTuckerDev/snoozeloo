@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -50,6 +51,12 @@ fun NavGraphBuilder.alarmListScreen(
     composable(ALARM_LIST_ROUTE) {
         val viewModel = hiltViewModel<AlarmListScreenViewModel>()
         val model by viewModel.observableModel.collectAsStateWithLifecycle()
+
+
+        LifecycleStartEffect(Unit) {
+            viewModel.onStart()
+            onStopOrDispose {  }
+        }
 
         AlarmListScreen(
             modifier = Modifier.fillMaxSize(),
