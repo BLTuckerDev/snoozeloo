@@ -14,6 +14,7 @@ class AlarmSchedulerTest {
     private lateinit var alarmSdkChecker: AlarmSdkChecker
     private lateinit var alarmReceiverIntentFactory: AlarmReceiverIntentFactory
     private lateinit var alarmScheduler: AlarmScheduler
+    private lateinit var mockAlarmInfoIntentFactory: AlarmInfoIntentFactory
 
     private val testAlarm = AlarmEntity(
         id = 123L,
@@ -28,19 +29,23 @@ class AlarmSchedulerTest {
     )
 
     private val testPendingIntent = mockk<PendingIntent>()
+    private val testAlarmInfoIntent = mockk<PendingIntent>()
 
     @Before
     fun setup() {
         alarmManager = mockk(relaxed = true)
         alarmSdkChecker = mockk()
         alarmReceiverIntentFactory = mockk()
+        mockAlarmInfoIntentFactory = mockk()
 
         every { alarmReceiverIntentFactory.createAlarmReceiverPendingIntent(any()) } returns testPendingIntent
+        every { mockAlarmInfoIntentFactory.createInfoPendingIntent(any()) } returns testAlarmInfoIntent
 
         alarmScheduler = AlarmScheduler(
             alarmManager = alarmManager,
             alarmSdkChecker = alarmSdkChecker,
-            alarmReceiverIntentFactory = alarmReceiverIntentFactory
+            alarmReceiverIntentFactory = alarmReceiverIntentFactory,
+            alarmInfoIntentFactory = mockAlarmInfoIntentFactory,
         )
     }
 
@@ -53,11 +58,7 @@ class AlarmSchedulerTest {
         verify {
             alarmReceiverIntentFactory.createAlarmReceiverPendingIntent(testAlarm)
             alarmSdkChecker.isAtLeastS()
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                testAlarm.nextScheduledTime,
-                testPendingIntent
-            )
+            alarmManager.setAlarmClock(any(), any())
         }
     }
 
@@ -72,11 +73,7 @@ class AlarmSchedulerTest {
             alarmReceiverIntentFactory.createAlarmReceiverPendingIntent(testAlarm)
             alarmSdkChecker.isAtLeastS()
             alarmManager.canScheduleExactAlarms()
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                testAlarm.nextScheduledTime,
-                testPendingIntent
-            )
+            alarmManager.setAlarmClock(any(), any())
         }
     }
 
