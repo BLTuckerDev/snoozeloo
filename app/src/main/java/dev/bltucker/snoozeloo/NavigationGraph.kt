@@ -31,8 +31,8 @@ fun SnoozelooNavigationGraph(navController: NavHostController){
             onNavigateBack = {
                 navController.popBackStack()
             },
-            onNavigateToRingtoneSetting = { alarmId ->
-                navController.navigateToRingtoneSettings(alarmId)
+            onNavigateToRingtoneSetting = { ringtoneName ->
+                navController.navigateToRingtoneSettings(ringtoneName)
             }
         )
 
@@ -43,11 +43,8 @@ fun SnoozelooNavigationGraph(navController: NavHostController){
         )
 
         ringtoneSettingScreen(
-            onNavigateBack = {
-                navController.popBackStack()
-            },
-            onRingtoneSelected = { ringtoneInfo ->
-                navController.previousBackStackEntry?.savedStateHandle?.set(RINGTONE_REQUEST_KEY, ringtoneInfo.title)
+            onNavigateBack = { ringtoneTitle ->
+                navController.previousBackStackEntry?.savedStateHandle?.set(RINGTONE_REQUEST_KEY, ringtoneTitle)
                 navController.popBackStack()
             }
         )

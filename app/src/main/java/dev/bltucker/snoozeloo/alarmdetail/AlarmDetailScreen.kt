@@ -72,7 +72,7 @@ fun NavController.navigateToAlarmDetail(alarmId: Long? = null) {
 
 fun NavGraphBuilder.alarmDetailScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToRingtoneSetting: (Long?) -> Unit
+    onNavigateToRingtoneSetting: (String) -> Unit
 ) {
     composable(
         route = "$ALARM_DETAIL_ROUTE?alarmId={alarmId}",
@@ -111,7 +111,7 @@ fun NavGraphBuilder.alarmDetailScreen(
             onNameChanged = viewModel::onNameChanged,
             onRepeatDayToggled = viewModel::onRepeatDayToggled,
             onRingtoneClick = {
-                onNavigateToRingtoneSetting(model.alarmId)
+                onNavigateToRingtoneSetting(model.ringtone)
             },
             onVolumeChanged = viewModel::onVolumeChanged,
             onVibrateToggled = viewModel::onVibrateToggled,

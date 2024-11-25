@@ -35,29 +35,26 @@ import dev.bltucker.snoozeloo.common.theme.SnoozelooTheme
 import dev.bltucker.snoozeloo.common.theme.SnoozelooWhite
 
 const val RINGTONE_SETTING_ROUTE = "ringtone-setting"
-const val RINGTONE_SOURCE_ALARM_ID = "sourceAlarmId"
+const val RINGTONE_NAME = "ringtoneName"
 const val RINGTONE_REQUEST_KEY = "ringtone_selection"
 
-fun NavController.navigateToRingtoneSettings(alarmId: Long? = null) {
+fun NavController.navigateToRingtoneSettings(ringtoneName: String = "Default") {
     val route = buildString {
         append(RINGTONE_SETTING_ROUTE)
-        if (alarmId != null) {
-            append("?$RINGTONE_SOURCE_ALARM_ID=$alarmId")
-        }
+        append("?$RINGTONE_NAME=$ringtoneName")
     }
     navigate(route)
 }
 
 fun NavGraphBuilder.ringtoneSettingScreen(
-    onNavigateBack: () -> Unit,
-    onRingtoneSelected: (RingtoneInfo) -> Unit
+    onNavigateBack: (String) -> Unit,
 ) {
     composable(
-        route = "$RINGTONE_SETTING_ROUTE?$RINGTONE_SOURCE_ALARM_ID={sourceAlarmId}",
+        route = "$RINGTONE_SETTING_ROUTE?$RINGTONE_NAME={ringtoneName}",
         arguments = listOf(
-            navArgument(RINGTONE_SOURCE_ALARM_ID) {
-                type = NavType.LongType
-                defaultValue = -1
+            navArgument(RINGTONE_NAME) {
+                type = NavType.StringType
+                defaultValue = "Default"
             }
         )
     ) {
@@ -72,8 +69,12 @@ fun NavGraphBuilder.ringtoneSettingScreen(
 
         RingtoneSettingScreen(
             model = model,
-            onBackClick = onNavigateBack,
-            onRingtoneSelected = onRingtoneSelected
+            onBackClick = {
+                onNavigateBack(model.selectedRingtoneInfo.title)
+            },
+            onRingtoneSelected = {ringtoneInfo ->
+                viewModel.onRingtoneSelected(ringtoneInfo)
+            }
         )
     }
 }
