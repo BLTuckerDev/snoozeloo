@@ -106,6 +106,7 @@ dependencies {
     // WorkManager
     implementation(libs.work.runtime)
     androidTestImplementation(libs.work.testing)
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
 
     // Testing
     testImplementation(libs.junit)
