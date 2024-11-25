@@ -117,6 +117,10 @@ class AlarmDetailViewModel @Inject constructor(
         mutableModel.update { it.copy(vibrate = !it.vibrate) }
     }
 
+    fun onUpdateRingtone(ringtone: String) {
+        mutableModel.update { it.copy(ringtone = ringtone) }
+    }
+
     fun onSave() {
         val model = mutableModel.value
         val hour = model.hour.toIntOrNull() ?: return

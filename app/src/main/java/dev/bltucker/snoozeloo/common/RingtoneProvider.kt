@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.RingtoneManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import javax.inject.Provider
 import javax.inject.Singleton
 
 data class RingtoneInfo(
@@ -12,7 +13,7 @@ data class RingtoneInfo(
 )
 
 @Singleton
-class RingtoneProvider @Inject constructor(private val ringtoneManager: RingtoneManager,
+class RingtoneProvider @Inject constructor(private val ringtoneManagerProvider: Provider<RingtoneManager>,
                                            @ApplicationContext private val context: Context) {
     fun getAvailableRingtones(): List<RingtoneInfo> {
 
@@ -24,6 +25,7 @@ class RingtoneProvider @Inject constructor(private val ringtoneManager: Ringtone
         )
 
         try {
+            val ringtoneManager = ringtoneManagerProvider.get()
             val cursor = ringtoneManager.cursor
 
             while (cursor.moveToNext()) {

@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.bltucker.snoozeloo.common.RingtoneInfo
 import dev.bltucker.snoozeloo.common.RingtoneProvider
 import dev.bltucker.snoozeloo.common.repositories.AlarmRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,20 +40,9 @@ class RingtoneSettingViewModel @Inject constructor(
             val alarm = alarmRepository.getAlarmById(sourceAlarmId)
             val alarmRingtone = ringtones.find { it.title == alarm?.ringtone } ?: ringtoneProvider.getDefaultRingtoneInfo()
 
-            mutableModel.value = RingtoneSettingScreenModel(
-                ringtones = ringtones,
-                selectedRingtoneInfo = alarmRingtone,
-                isLoading = false
-            )
-        }
-    }
-
-    fun onRingtoneSelected(selectedRingtone: RingtoneInfo) {
-        viewModelScope.launch {
-            alarmRepository.updateAlarmRingtone(sourceAlarmId, selectedRingtone.title)
-        }
-        mutableModel.update {
-            it.copy(selectedRingtoneInfo = selectedRingtone)
+            mutableModel.update {
+                it.copy(ringtones = ringtones, selectedRingtoneInfo = alarmRingtone, isLoading = false)
+            }
         }
     }
 }

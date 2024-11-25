@@ -36,25 +36,28 @@ import dev.bltucker.snoozeloo.common.theme.SnoozelooWhite
 
 const val RINGTONE_SETTING_ROUTE = "ringtone-setting"
 const val RINGTONE_SOURCE_ALARM_ID = "sourceAlarmId"
+const val RINGTONE_REQUEST_KEY = "ringtone_selection"
 
 fun NavController.navigateToRingtoneSettings(alarmId: Long? = null) {
     val route = buildString {
         append(RINGTONE_SETTING_ROUTE)
         if (alarmId != null) {
-            append("/$alarmId")
+            append("?$RINGTONE_SOURCE_ALARM_ID=$alarmId")
         }
     }
     navigate(route)
 }
 
 fun NavGraphBuilder.ringtoneSettingScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onRingtoneSelected: (RingtoneInfo) -> Unit
 ) {
     composable(
-        route = "$RINGTONE_SETTING_ROUTE/{$RINGTONE_SOURCE_ALARM_ID}",
+        route = "$RINGTONE_SETTING_ROUTE?$RINGTONE_SOURCE_ALARM_ID={sourceAlarmId}",
         arguments = listOf(
             navArgument(RINGTONE_SOURCE_ALARM_ID) {
                 type = NavType.LongType
+                defaultValue = -1
             }
         )
     ) {
@@ -70,7 +73,7 @@ fun NavGraphBuilder.ringtoneSettingScreen(
         RingtoneSettingScreen(
             model = model,
             onBackClick = onNavigateBack,
-            onRingtoneSelected = viewModel::onRingtoneSelected
+            onRingtoneSelected = onRingtoneSelected
         )
     }
 }

@@ -8,6 +8,7 @@ import dev.bltucker.snoozeloo.alarmdetail.navigateToAlarmDetail
 import dev.bltucker.snoozeloo.alarmlist.ALARM_LIST_ROUTE
 import dev.bltucker.snoozeloo.alarmlist.alarmListScreen
 import dev.bltucker.snoozeloo.alarmtrigger.alarmTriggerScreen
+import dev.bltucker.snoozeloo.ringtonesetting.RINGTONE_REQUEST_KEY
 import dev.bltucker.snoozeloo.ringtonesetting.navigateToRingtoneSettings
 import dev.bltucker.snoozeloo.ringtonesetting.ringtoneSettingScreen
 
@@ -43,6 +44,10 @@ fun SnoozelooNavigationGraph(navController: NavHostController){
 
         ringtoneSettingScreen(
             onNavigateBack = {
+                navController.popBackStack()
+            },
+            onRingtoneSelected = { ringtoneInfo ->
+                navController.previousBackStackEntry?.savedStateHandle?.set(RINGTONE_REQUEST_KEY, ringtoneInfo.title)
                 navController.popBackStack()
             }
         )

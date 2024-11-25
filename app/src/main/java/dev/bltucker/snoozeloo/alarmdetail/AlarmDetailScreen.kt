@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +55,7 @@ import dev.bltucker.snoozeloo.common.theme.SnoozelooBlack
 import dev.bltucker.snoozeloo.common.theme.SnoozelooBlue
 import dev.bltucker.snoozeloo.common.theme.SnoozelooBluePale
 import dev.bltucker.snoozeloo.common.theme.SnoozelooWhite
+import dev.bltucker.snoozeloo.ringtonesetting.RINGTONE_REQUEST_KEY
 import java.time.DayOfWeek
 
 const val ALARM_DETAIL_ROUTE = "alarm-detail"
@@ -70,7 +72,7 @@ fun NavController.navigateToAlarmDetail(alarmId: Long? = null) {
 
 fun NavGraphBuilder.alarmDetailScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToRingtoneSetting: (Long) -> Unit
+    onNavigateToRingtoneSetting: (Long?) -> Unit
 ) {
     composable(
         route = "$ALARM_DETAIL_ROUTE?alarmId={alarmId}",
@@ -80,9 +82,18 @@ fun NavGraphBuilder.alarmDetailScreen(
                 defaultValue = -1L
             }
         )
-    ) {
+    ) { backStackEntry ->
         val viewModel = hiltViewModel<AlarmDetailViewModel>()
         val model by viewModel.observableModel.collectAsStateWithLifecycle()
+
+        val ringtoneTitle by backStackEntry.savedStateHandle.getStateFlow<String?>(RINGTONE_REQUEST_KEY, null).collectAsStateWithLifecycle()
+
+        LaunchedEffect(ringtoneTitle) {
+            ringtoneTitle?.let { ringtone ->
+                viewModel.onUpdateRingtone(ringtone)
+                backStackEntry.savedStateHandle.remove<String>(RINGTONE_REQUEST_KEY)
+            }
+        }
 
         LifecycleStartEffect(Unit) {
             viewModel.onStart()
@@ -100,9 +111,8 @@ fun NavGraphBuilder.alarmDetailScreen(
             onNameChanged = viewModel::onNameChanged,
             onRepeatDayToggled = viewModel::onRepeatDayToggled,
             onRingtoneClick = {
-                //TODO need ringtone setting screen to handle when there is no alarm yet
-                onNavigateToRingtoneSetting(model.alarmId ?: -1L)
-                              },
+                onNavigateToRingtoneSetting(model.alarmId)
+            },
             onVolumeChanged = viewModel::onVolumeChanged,
             onVibrateToggled = viewModel::onVibrateToggled,
             onSave = {
@@ -162,7 +172,9 @@ fun AlarmDetailScreen(
                     ) {
                         Text(
                             text = "Save",
-                            color = if (model.isSaveEnabled) SnoozelooBlue else SnoozelooBlue.copy(alpha = 0.5f)
+                            color = if (model.isSaveEnabled) SnoozelooBlue else SnoozelooBlue.copy(
+                                alpha = 0.5f
+                            )
                         )
                     }
                 }
@@ -178,7 +190,11 @@ fun AlarmDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TimeInputRow(model = model, onHourChanged = onHourChanged, onMinuteChanged = onMinuteChanged)
+            TimeInputRow(
+                model = model,
+                onHourChanged = onHourChanged,
+                onMinuteChanged = onMinuteChanged
+            )
 
             if (model.nextAlarmText.isNotEmpty()) {
                 Text(
