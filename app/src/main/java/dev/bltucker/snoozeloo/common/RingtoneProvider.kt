@@ -21,6 +21,10 @@ class RingtoneProvider @Inject constructor(private val ringtoneManagerProvider: 
             RingtoneInfo(
                 uri = "silent",
                 title = "Silent"
+            ),
+            RingtoneInfo(
+                uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString(),
+                title = "Default"
             )
         )
 
@@ -47,7 +51,7 @@ class RingtoneProvider @Inject constructor(private val ringtoneManagerProvider: 
             }
         }
 
-        return ringtones
+        return ringtones.distinctBy { it.title }
     }
 
     fun getDefaultRingtoneInfo(): RingtoneInfo{

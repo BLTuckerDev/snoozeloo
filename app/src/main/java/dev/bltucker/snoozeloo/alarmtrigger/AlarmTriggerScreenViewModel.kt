@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import android.os.Build
+import dev.bltucker.snoozeloo.common.RingtoneProvider
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -29,6 +30,7 @@ class AlarmTriggerViewModel @Inject constructor(
     private val alarmRepository: AlarmRepository,
     private val vibrator: Vibrator,
     private val audioManager: AudioManager,
+    private val ringtoneProvider: RingtoneProvider,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -82,11 +84,17 @@ class AlarmTriggerViewModel @Inject constructor(
         }
     }
 
-    private fun playRingtone(ringtonePath: String, volume: Int) {
+    private fun playRingtone(ringtoneTitle: String, volume: Int) {
         try {
-            val ringtoneUri = when (ringtonePath) {
+            val ringtoneUri = when (ringtoneTitle) {
                 "default" -> RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                else -> Uri.parse(ringtonePath)
+                else -> {
+                    ringtoneProvider.getAvailableRingtones().find { it.title == ringtoneTitle }?.let {
+                        Uri.parse(it.uri)
+                    } ?: run {
+                        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                    }
+                }
             }
 
             mediaPlayer = MediaPlayer().apply {

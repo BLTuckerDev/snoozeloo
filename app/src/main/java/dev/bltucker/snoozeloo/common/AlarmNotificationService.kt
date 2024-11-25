@@ -18,7 +18,6 @@ import android.os.Vibrator
 import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
 import dev.bltucker.snoozeloo.R
-import dev.bltucker.snoozeloo.alarmtrigger.ALARM_ID_ARG
 import dev.bltucker.snoozeloo.common.repositories.AlarmRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +42,9 @@ class AlarmNotificationService : Service() {
 
     @Inject
     lateinit var vibrator: Vibrator
+
+    @Inject
+    lateinit var ringtoneProvider: RingtoneProvider
 
     private var wakeLock: PowerManager.WakeLock? = null
     private var mediaPlayer: MediaPlayer? = null
@@ -120,11 +122,17 @@ class AlarmNotificationService : Service() {
         }
     }
 
-    private fun playRingtone(ringtonePath: String, volume: Int) {
+    private fun playRingtone(ringtoneTitle: String, volume: Int) {
         try {
-            val ringtoneUri = when (ringtonePath) {
+            val ringtoneUri = when (ringtoneTitle) {
                 "default" -> RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                else -> Uri.parse(ringtonePath)
+                else -> {
+                    ringtoneProvider.getAvailableRingtones().find { it.title == ringtoneTitle }?.let {
+                        Uri.parse(it.uri)
+                    } ?: run {
+                        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                    }
+                }
             }
 
             mediaPlayer = MediaPlayer().apply {
