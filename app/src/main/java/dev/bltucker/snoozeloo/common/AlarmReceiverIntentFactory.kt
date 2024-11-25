@@ -15,7 +15,6 @@ class AlarmReceiverIntentFactory @Inject constructor(@ApplicationContext private
         return Intent(context, AlarmReceiver::class.java).apply {
             action = ALARM_TRIGGER_ACTION
             putExtra(EXTRA_ALARM_ID, alarm.id)
-            putExtra(EXTRA_ALARM_NAME, alarm.name)
         }
     }
 
@@ -31,7 +30,6 @@ class AlarmReceiverIntentFactory @Inject constructor(@ApplicationContext private
     companion object {
         const val ALARM_TRIGGER_ACTION = "dev.bltucker.snoozeloo.ALARM_TRIGGER"
         const val EXTRA_ALARM_ID = "alarm_id"
-        const val EXTRA_ALARM_NAME = "alarm_name"
     }
 
 }

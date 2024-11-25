@@ -13,11 +13,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.bltucker.snoozeloo.common.AlarmNotificationService
 import dev.bltucker.snoozeloo.common.repositories.AlarmRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalTime
+import android.os.Build
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -64,23 +66,29 @@ class AlarmTriggerViewModel @Inject constructor(
                     formattedTime = time.format(formatter)
                 )
 
-                if (it.ringtone != "silent") {
-                    val ringtoneUri = when (it.ringtone) {
-                        "default" -> RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                        else -> Uri.parse(it.ringtone)
-                    }
-                    playRingtone(ringtoneUri, it.volume)
-                }
-
-                if (it.vibrate) {
-                    startVibration()
+                if (!shouldUseService()) {
+                    startAlarm(alarm.ringtone, alarm.volume, alarm.vibrate)
                 }
             }
         }
     }
 
-    private fun playRingtone(ringtoneUri: Uri, volume: Int) {
+    private fun startAlarm(ringtonePath: String, volume: Int, shouldVibrate: Boolean) {
+        if (ringtonePath != "silent") {
+            playRingtone(ringtonePath, volume)
+        }
+        if (shouldVibrate) {
+            startVibration()
+        }
+    }
+
+    private fun playRingtone(ringtonePath: String, volume: Int) {
         try {
+            val ringtoneUri = when (ringtonePath) {
+                "default" -> RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                else -> Uri.parse(ringtonePath)
+            }
+
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(context, ringtoneUri)
                 setAudioAttributes(
@@ -90,7 +98,6 @@ class AlarmTriggerViewModel @Inject constructor(
                         .build()
                 )
                 isLooping = true
-
 
                 val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
                 val scaledVolume = (volume / 100f) * maxVolume
@@ -108,7 +115,7 @@ class AlarmTriggerViewModel @Inject constructor(
         vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 500, 1000), 0))
     }
 
-    private fun stopAlarm() {
+    private fun stopLocalAlarm() {
         mediaPlayer?.apply {
             if (isPlaying) {
                 stop()
@@ -116,7 +123,6 @@ class AlarmTriggerViewModel @Inject constructor(
             release()
         }
         mediaPlayer = null
-
         vibrator.cancel()
     }
 
@@ -127,19 +133,34 @@ class AlarmTriggerViewModel @Inject constructor(
                 alarmRepository.toggleAlarm(alarmId, false)
             }
 
-            stopAlarm()
+            if (shouldUseService()) {
+                AlarmNotificationService.stopService(context)
+            } else {
+                stopLocalAlarm()
+            }
         }
     }
 
     fun onSnooze() {
         viewModelScope.launch {
             alarmRepository.snoozeAlarm(alarmId)
-            stopAlarm()
+
+            if (shouldUseService()) {
+                AlarmNotificationService.stopService(context)
+            } else {
+                stopLocalAlarm()
+            }
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        stopAlarm()
+        if (shouldUseService()) {
+            AlarmNotificationService.stopService(context)
+        } else {
+            stopLocalAlarm()
+        }
     }
+
+    private fun shouldUseService(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 }
