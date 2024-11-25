@@ -14,7 +14,7 @@ import dev.bltucker.snoozeloo.common.theme.SnoozelooTheme
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private lateinit var navController: NavHostController
+    private var navController: NavHostController? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -22,9 +22,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            navController = rememberNavController()
+            val rememberedNavController = rememberNavController()
+            navController = rememberedNavController
             SnoozelooTheme {
-                SnoozelooNavigationGraph(navController)
+                SnoozelooNavigationGraph(rememberedNavController)
             }
         }
     }
@@ -32,6 +33,6 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         setIntent(intent)
-        navController.handleDeepLink(intent)
+        navController?.handleDeepLink(intent)
     }
 }

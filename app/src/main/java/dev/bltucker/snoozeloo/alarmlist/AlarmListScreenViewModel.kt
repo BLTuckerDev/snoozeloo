@@ -1,8 +1,14 @@
 package dev.bltucker.snoozeloo.alarmlist
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.bltucker.snoozeloo.common.repositories.AlarmRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +17,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AlarmListScreenViewModel @Inject constructor(private val alarmRepository: AlarmRepository): ViewModel(){
+class AlarmListScreenViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val alarmRepository: AlarmRepository): ViewModel(){
 
     private val mutableModel: MutableStateFlow<AlarmListScreenModel> = MutableStateFlow(AlarmListScreenModel())
 
@@ -26,6 +34,8 @@ class AlarmListScreenViewModel @Inject constructor(private val alarmRepository: 
 
         hasStarted = true
 
+        checkNotificationPermission()
+
         viewModelScope.launch {
             alarmRepository.observeAllAlarms().collect{ alarms ->
                 mutableModel.update { it.copy(alarms = alarms, isLoading = false) }
@@ -33,6 +43,19 @@ class AlarmListScreenViewModel @Inject constructor(private val alarmRepository: 
         }
     }
 
+
+    fun checkNotificationPermission() {
+        val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+
+        mutableModel.update { it.copy(hasNotificationPermission = hasPermission) }
+    }
 
     fun onToggleAlarm(alarmId: Long, isEnabled: Boolean){
         viewModelScope.launch {
